@@ -37,16 +37,52 @@ ENV/
 .ipynb_checkpoints
 *.ipynb
 
-# Model checkpoints (optional - uncomment if you don't want to track large files)
-# *.pth
-# *.pt
-# *.ckpt
+# Model checkpoints (not in git - use GitHub Releases)
+*.pth
+*.pt
+*.ckpt
+epoch_014.pth
 
 # Output files
 test_output/
 outputs/
 samples/
 ckpts/
+
+# Test files (not needed for deployment)
+test_cases/
+test_input/
+test_*.png
+test_*.jpg
+
+# Data files (not needed for Streamlit app)
+*.csv
+*.xlsx
+data_phase_inventory.csv
+audit_report.csv
+manifest_*.csv
+training_manifest.csv
+
+# Documentation files (keep only README)
+*.md
+!README.md
+
+# Training files (not needed for inference)
+train_*.py
+stage1_data_prep.ipynb
+
+# Scripts (not needed for deployment)
+*.sh
+fix_*.sh
+test_*.sh
+run_*.sh
+
+# Word documents
+*.docx
+
+# Config files (keep only Streamlit config)
+config_*.yaml
+!config.toml
 
 # OS
 .DS_Store

@@ -1,26 +1,22 @@
-# Core dependencies
+# Streamlit Cloud Requirements - Minimal for Deployment
+# Only what's needed for the Streamlit app to run
+
+# Core ML Framework
 torch>=2.0.0
 torchvision>=0.15.0
-numpy>=1.24.0,<2.0.0
-protobuf<5,>=3.20
-importlib-metadata<7,>=1.4
+
+# Image Processing
 opencv-python>=4.8.0
 Pillow>=10.0.0
-
-# Streamlit for web interface
-streamlit>=1.28.0
-
-# Data processing
-pandas>=2.0.0
+numpy>=1.24.0,<2.0.0
 scikit-image>=0.21.0
 
-# Optional but recommended
-albumentations>=1.3.0
+# Streamlit
+streamlit>=1.28.0
 
-# For model downloading
+# Compatibility
+protobuf<5,>=3.20
+importlib-metadata<7,>=1.4
+
+# For model downloading from URL
 urllib3>=1.26.0
-
-# Optional metrics (for training)
-# lpips>=0.1.4
-# torch-fidelity>=0.3.0
-
