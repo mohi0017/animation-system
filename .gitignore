@@ -64,3 +64,4 @@ Thumbs.db
 /tmp/
 
 epoch_014.pth
+*.token_git
