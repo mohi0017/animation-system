@@ -28,6 +28,11 @@ except (ImportError, AttributeError, Exception):
     DataLoader = None
     A = None
 
+# Create a dummy Dataset class if not available (for class definition)
+if Dataset is None:
+    class Dataset:
+        pass
+
 
 def load_rgba(path):
     """Loads PNG and ensures 4 channels (RGBA)."""
@@ -74,15 +79,15 @@ def get_train_augs():
     ], additional_targets={'target': 'image'})
 
 
-class AnimationPhaseDataset(Dataset):
-    """Dataset for animation phase pairs."""
-    
-    def __init__(self, manifest_path, augment=False, size=512):
-        if not HAS_DATASET_DEPS:
-            raise ImportError("pandas and torch are required for dataset. Install with: pip install pandas torch")
-        if not os.path.exists(manifest_path):
-            raise FileNotFoundError(f"Manifest file not found: {manifest_path}")
-        self.df = pd.read_csv(manifest_path)
+# Only define Dataset class if dependencies are available
+if HAS_DATASET_DEPS:
+    class AnimationPhaseDataset(Dataset):
+        """Dataset for animation phase pairs."""
+        
+        def __init__(self, manifest_path, augment=False, size=512):
+            if not os.path.exists(manifest_path):
+                raise FileNotFoundError(f"Manifest file not found: {manifest_path}")
+            self.df = pd.read_csv(manifest_path)
         self.size = size
         self.augment = augment
         self.augs = get_train_augs() if augment else None
@@ -113,12 +118,17 @@ class AnimationPhaseDataset(Dataset):
         input_tensor = torch.from_numpy(input_img.transpose(2, 0, 1)).float()
         target_tensor = torch.from_numpy(target_img.transpose(2, 0, 1)).float()
 
-        return {
-            "input": input_tensor,
-            "target": target_tensor,
-            "input_phase": row.input_phase,
-            "target_phase": row.target_phase
-        }
+            return {
+                "input": input_tensor,
+                "target": target_tensor,
+                "input_phase": row.input_phase,
+                "target_phase": row.target_phase
+            }
+else:
+    # Dummy class if dependencies not available
+    class AnimationPhaseDataset:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("Dataset dependencies not available. Install with: pip install pandas torch albumentations")
 
 
 def get_dataloaders(train_csv, val_csv, test_csv, batch_size=4, num_workers=2, augment=True, size=512):
