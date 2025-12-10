@@ -78,9 +78,6 @@ with st.sidebar:
     
     # Phase selection
     st.subheader("Phase Selection")
-    
-    # Phase selection
-    st.subheader("Phase Selection")
     input_phase = st.selectbox(
         "Input Phase",
         PHASES,
