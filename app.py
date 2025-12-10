@@ -45,24 +45,71 @@ st.markdown("---")
 with st.sidebar:
     st.header("⚙️ Configuration")
     
-    # Checkpoint selection
-    checkpoint_dir = os.path.dirname(__file__)
-    checkpoint_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.pth')]
+    # Model loading method
+    model_source = st.radio(
+        "Model Source",
+        ["Local File", "Download from URL"],
+        index=0,
+        help="Choose how to load the model"
+    )
     
-    if checkpoint_files:
-        default_ckpt = "epoch_014.pth" if "epoch_014.pth" in checkpoint_files else checkpoint_files[0]
-        selected_ckpt = st.selectbox(
-            "Select Checkpoint",
-            checkpoint_files,
-            index=checkpoint_files.index(default_ckpt) if default_ckpt in checkpoint_files else 0
-        )
-        checkpoint_path = os.path.join(checkpoint_dir, selected_ckpt)
+    checkpoint_path = None
+    
+    if model_source == "Local File":
+        # Checkpoint selection from local files
+        checkpoint_dir = os.path.dirname(__file__)
+        try:
+            checkpoint_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.pth')]
+            
+            if checkpoint_files:
+                default_ckpt = "epoch_014.pth" if "epoch_014.pth" in checkpoint_files else checkpoint_files[0]
+                selected_ckpt = st.selectbox(
+                    "Select Checkpoint",
+                    checkpoint_files,
+                    index=checkpoint_files.index(default_ckpt) if default_ckpt in checkpoint_files else 0
+                )
+                checkpoint_path = os.path.join(checkpoint_dir, selected_ckpt)
+            else:
+                checkpoint_path = st.text_input(
+                    "Checkpoint Path",
+                    value=os.path.join(checkpoint_dir, "epoch_014.pth"),
+                    help="Path to model checkpoint file"
+                )
+        except Exception:
+            checkpoint_path = st.text_input(
+                "Checkpoint Path",
+                value="epoch_014.pth",
+                help="Path to model checkpoint file"
+            )
     else:
-        checkpoint_path = st.text_input(
-            "Checkpoint Path",
-            value=os.path.join(checkpoint_dir, "epoch_014.pth"),
-            help="Path to model checkpoint file"
+        # Download from URL
+        model_url = st.text_input(
+            "Model URL",
+            value="",
+            help="Enter URL to download model checkpoint (.pth file)"
         )
+        
+        if model_url:
+            # Download model if not already downloaded
+            @st.cache_resource
+            def download_model(url, filename="epoch_014.pth"):
+                import urllib.request
+                checkpoint_dir = os.path.dirname(__file__)
+                checkpoint_path = os.path.join(checkpoint_dir, filename)
+                
+                if not os.path.exists(checkpoint_path):
+                    try:
+                        with st.spinner("Downloading model... This may take a few minutes."):
+                            urllib.request.urlretrieve(url, checkpoint_path)
+                        st.success("Model downloaded successfully!")
+                    except Exception as e:
+                        st.error(f"Failed to download model: {e}")
+                        return None
+                return checkpoint_path
+            
+            checkpoint_path = download_model(model_url)
+        else:
+            st.info("Enter a URL to download the model checkpoint")
     
     # Phase selection
     st.subheader("Phase Selection")
@@ -164,10 +211,14 @@ with col1:
         # Process button
         st.markdown("")  # Spacing
         if st.button("🚀 Process Image", type="primary"):
+            if checkpoint_path is None or not checkpoint_path:
+                st.error("⚠️ Please configure model checkpoint in sidebar first!")
+                st.stop()
+            
             device = torch.device("cuda" if (use_gpu and torch.cuda.is_available()) else "cpu")
             
             # Load model
-            with st.spinner("Loading model..."):
+            with st.spinner("Loading model... This may take 10-20 seconds on first load."):
                 model, embedder, device = load_model(checkpoint_path, device)
             
             if model is None:
