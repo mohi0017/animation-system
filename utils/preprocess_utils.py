@@ -88,35 +88,35 @@ if HAS_DATASET_DEPS:
             if not os.path.exists(manifest_path):
                 raise FileNotFoundError(f"Manifest file not found: {manifest_path}")
             self.df = pd.read_csv(manifest_path)
-        self.size = size
-        self.augment = augment
-        self.augs = get_train_augs() if augment else None
+            self.size = size
+            self.augment = augment
+            self.augs = get_train_augs() if augment else None
 
-    def __len__(self):
-        return len(self.df)
+        def __len__(self):
+            return len(self.df)
 
-    def __getitem__(self, idx):
-        row = self.df.iloc[idx]
-        input_img = load_rgba(row.input_path)
-        target_img = load_rgba(row.target_path)
+        def __getitem__(self, idx):
+            row = self.df.iloc[idx]
+            input_img = load_rgba(row.input_path)
+            target_img = load_rgba(row.target_path)
 
-        # Preprocess
-        input_img = resize_and_pad_rgba(input_img, self.size)
-        target_img = resize_and_pad_rgba(target_img, self.size)
+            # Preprocess
+            input_img = resize_and_pad_rgba(input_img, self.size)
+            target_img = resize_and_pad_rgba(target_img, self.size)
 
-        # Albumentations expects dicts
-        if self.augs:
-            transformed = self.augs(image=input_img, target=target_img)
-            input_img = transformed["image"]
-            target_img = transformed["target"]
+            # Albumentations expects dicts
+            if self.augs:
+                transformed = self.augs(image=input_img, target=target_img)
+                input_img = transformed["image"]
+                target_img = transformed["target"]
 
-        # Normalize
-        input_img = normalize_rgba(input_img)
-        target_img = normalize_rgba(target_img)
+            # Normalize
+            input_img = normalize_rgba(input_img)
+            target_img = normalize_rgba(target_img)
 
-        # Convert to Tensor
-        input_tensor = torch.from_numpy(input_img.transpose(2, 0, 1)).float()
-        target_tensor = torch.from_numpy(target_img.transpose(2, 0, 1)).float()
+            # Convert to Tensor
+            input_tensor = torch.from_numpy(input_img.transpose(2, 0, 1)).float()
+            target_tensor = torch.from_numpy(target_img.transpose(2, 0, 1)).float()
 
             return {
                 "input": input_tensor,
